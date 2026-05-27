@@ -1,23 +1,23 @@
 "use client";
-
+ 
 import { useEffect, useRef, useState } from "react";
 import { cards } from "../data/cards";
-
+ 
 const navItems = [
   { label: "Start", href: "#image1-cloud" },
   { label: "01", href: "#info-card-1" },
   { label: "02", href: "#info-card-2" },
   { label: "03", href: "#info-card-3" },
 ];
-
+ 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const assetPath = (path) => `${basePath}${path}`;
 const homePath = `${basePath || ""}/`;
-
+ 
 function InfoCard({ card, index }) {
   const number = String(index + 1).padStart(2, "0");
   const isEven = (index + 1) % 2 === 0;
-
+ 
   return (
     <article
       id={`info-card-${index + 1}`}
@@ -47,7 +47,7 @@ function InfoCard({ card, index }) {
     </article>
   );
 }
-
+ 
 export default function MountainsLanding() {
   const rightSideNavRef = useRef(null);
   const sectionIndicatorRef = useRef(null);
@@ -61,11 +61,11 @@ export default function MountainsLanding() {
   const mainContainerRef = useRef(null);
   const hideNavTimerRef = useRef(null);
   const [accountIcon, setAccountIcon] = useState("/assets/icons/profile-icon.svg");
-
+ 
   useEffect(() => {
     const thresholds = Array.from({ length: 101 }, (_, i) => i / 100);
     const observers = [];
-
+ 
     const showRightSideNav = () => {
       const rightSideNav = rightSideNavRef.current;
       if (!rightSideNav) return;
@@ -75,9 +75,9 @@ export default function MountainsLanding() {
         rightSideNav.classList.add("opacity-0");
       }, 1700);
     };
-
+ 
     showRightSideNav();
-
+ 
     const backgroundObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -88,12 +88,12 @@ export default function MountainsLanding() {
             }
             showRightSideNav();
           }
-
+ 
           const boundedRatio = Math.max(0, Math.min(1, ratio));
           const slide = 150 * (1 - boundedRatio);
           const slide2 = 50 * (1 - boundedRatio);
           const slide3 = 20 * (1 - boundedRatio);
-
+ 
           entry.target.style.transform = `translateY(-${slide}px)`;
           if (image2MountainsRef.current) {
             image2MountainsRef.current.style.transform = `translateY(-${slide2}px)`;
@@ -108,7 +108,7 @@ export default function MountainsLanding() {
       },
       { threshold: thresholds },
     );
-
+ 
     const heroOpacityObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -119,41 +119,46 @@ export default function MountainsLanding() {
       },
       { threshold: thresholds },
     );
-
+ 
     if (image1CloudRef.current) backgroundObserver.observe(image1CloudRef.current);
     if (heroPlaceholderRef.current) heroOpacityObserver.observe(heroPlaceholderRef.current);
     observers.push(backgroundObserver, heroOpacityObserver);
-
+ 
     const updateBackgroundHeight = () => {
       if (!mainContainerRef.current || !layerBackgroundColorRef.current) return;
       layerBackgroundColorRef.current.style.height = `${mainContainerRef.current.offsetHeight + 200}px`;
     };
-
+ 
     updateBackgroundHeight();
     window.addEventListener("resize", updateBackgroundHeight);
-
+ 
     const animateCardImage = (entry, direction) => {
       const card = entry.target.closest(".info-card");
       const startDash = card?.querySelector(".start-dash");
       const ratio = entry.intersectionRatio;
-
+ 
       if (ratio > 0.6 && card && sectionIndicatorRef.current) {
         const index = card.querySelector(".info-serial-no")?.textContent || "00";
         sectionIndicatorRef.current.style.transform = `translateY(${index}00%)`;
         showRightSideNav();
       }
-
+ 
       if (entry.boundingClientRect.top < 0) return;
-
+ 
+      const isMobile = window.innerWidth < 768;
       const slideAmount = 50 - ratio * 50;
-      entry.target.style.transform =
-        direction === "odd" ? `translateX(${slideAmount}px)` : `translateX(-${slideAmount}px)`;
+      if (isMobile) {
+        entry.target.style.transform = `translateY(${slideAmount}px)`;
+      } else {
+        entry.target.style.transform =
+          direction === "odd" ? `translateX(${slideAmount}px)` : `translateX(-${slideAmount}px)`;
+      }
       entry.target.style.opacity = 0.3 + ratio * 0.7;
       if (startDash) {
         startDash.style.maxWidth = `${Math.min((72 * (ratio * 100 + 30)) / 100, 72)}px`;
       }
     };
-
+ 
     const oddCardObserver = new IntersectionObserver(
       (entries) => entries.forEach((entry) => animateCardImage(entry, "odd")),
       { threshold: thresholds },
@@ -172,7 +177,7 @@ export default function MountainsLanding() {
       },
       { threshold: thresholds },
     );
-
+ 
     document.querySelectorAll(".info-image").forEach((img, index) => {
       if ((index + 1) % 2 === 0) evenCardObserver.observe(img);
       else oddCardObserver.observe(img);
@@ -181,17 +186,17 @@ export default function MountainsLanding() {
       .querySelectorAll(".info-card .title, .info-card .description, .info-card .read-more")
       .forEach((element) => slideUpObserver.observe(element));
     observers.push(oddCardObserver, evenCardObserver, slideUpObserver);
-
+ 
     return () => {
       clearTimeout(hideNavTimerRef.current);
       window.removeEventListener("resize", updateBackgroundHeight);
       observers.forEach((observer) => observer.disconnect());
     };
   }, []);
-
+ 
   const handleAccountEnter = () => setAccountIcon("/assets/icons/profile-icon-yellow.svg");
   const handleAccountLeave = () => setAccountIcon("/assets/icons/profile-icon.svg");
-
+ 
   return (
     <>
       <div ref={layerBackgroundColorRef} className="layer-background-color" aria-hidden="true" />
@@ -215,7 +220,7 @@ export default function MountainsLanding() {
           <div ref={sectionIndicatorRef} className="section-indicator" />
         </div>
       </aside>
-
+ 
       <div
         id="image1-cloud"
         ref={image1CloudRef}
@@ -236,7 +241,7 @@ export default function MountainsLanding() {
       <div className="bg-layer1-black-white" />
       <div className="bg-layer2-black-white" />
       <div ref={bgLayer3Ref} className="bg-layer3-black-white" />
-
+ 
       <nav>
         <div className="logo">MNTN</div>
         <ul className="nav-items">
@@ -263,7 +268,7 @@ export default function MountainsLanding() {
           </a>
         </div>
       </nav>
-
+ 
       <main ref={mainContainerRef} className="main-container">
         <section className="hero-section" ref={heroSectionRef}>
           <div className="subtitle">
@@ -276,14 +281,14 @@ export default function MountainsLanding() {
             <img src={assetPath("/assets/icons/down-arrow.svg")} alt="" />
           </a>
         </section>
-
+ 
         <section className="container-info-cards">
           {cards.map((card, index) => (
             <InfoCard key={card.title} card={card} index={index} />
           ))}
         </section>
       </main>
-
+ 
       <footer>
         <div className="footer-info">
           <div className="footer-info-about-us">
@@ -292,7 +297,7 @@ export default function MountainsLanding() {
           </div>
           <span className="copyright">Copyright 2026 MNTN. Regulamin i prywatność</span>
         </div>
-
+ 
         <div className="footer-navlinks">
           <div>
             <div className="footer-navlinks-header">Więcej na blogu</div>
@@ -333,3 +338,4 @@ export default function MountainsLanding() {
     </>
   );
 }
+ 
